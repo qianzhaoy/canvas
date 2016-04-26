@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>学生端</title>
+    <script type="text/javascript" src="https://cdn.socket.io/socket.io-1.3.5.js"></script>
+
+</head>
+
+<body>
+    <canvas id="bb" height="600" width="800" style="border:1px solid #000"></canvas>
+
+    <script type="text/javascript">
+        var socket = io();
+        var bb = document.getElementById('bb');
+        var cb = bb.getContext('2d');
+        var color = '';
+        var lineWidth = 1;
+        socket.on('color', function(msg) {
+            color = msg;
+        }) 
+        socket.on('lineWidth', function(msg) {
+            lineWidth = msg;
+        })
+        socket.on('start', function(msg) {
+            cb.beginPath();
+            cb.moveTo(msg.startX, msg.startY);
+            socket.on('path', function(msg) {
+                cb.lineWidth = lineWidth
+                cb.lineTo(msg.hoverX, msg.hoverY);
+                cb.strokeStyle = color;
+                cb.stroke();
+            })
+        });
+
+    </script>
+</body>
+
+</html>

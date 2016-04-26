@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <canvas id="canvas" height="500" width="500" style="border:1px solid #000"></canvas>
+
+</body>
+<script type="text/javascript">
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    var arr = [];
+    var startX;
+    var startY;
+    var moveFn = function(eve) {
+        var a = eve.pageX - 8;
+        var b = eve.pageY - 8;
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        for (var i = 0; i < arr.length-1; i++) {
+            ctx.beginPath();
+            ctx.moveTo(arr[i].startX, arr[i].startY)
+            ctx.lineTo(arr[i].endX, arr[i].endY);
+            ctx.stroke();
+        }
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(a, b);
+        ctx.stroke();
+    }
+    canvas.addEventListener('mousedown', function(eve) {
+        startX = eve.pageX - 8; // - 8 为了修正轨迹坐标
+        startY = eve.pageY - 8;
+        arr.push({
+            startX: startX,
+            startY: startY
+        })
+        canvas.addEventListener('mousemove', moveFn, false);
+    }, false);
+    canvas.addEventListener('mouseup', function(eve) {
+        var a = eve.pageX - 8;
+        var b = eve.pageY - 8;
+        arr[arr.length - 1].endX = a;
+        arr[arr.length - 1].endY = b;
+        canvas.removeEventListener('mousemove', moveFn)
+    })
+
+</script>
+
+</html>
