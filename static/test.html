@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>学生端</title>
+    <script type="text/javascript" src="socket.io.js"></script>
+
+</head>
+
+<body>
+    <canvas id="bb" height="600" width="800" style="border:1px solid #000"></canvas>
+
+    <script type="text/javascript">
+        var socket = io();
+        var bb = document.getElementById('bb');
+        var cb = bb.getContext('2d');
+        var allMes = {
+            color: "#000",
+            lineWidth: 1
+        }
+        socket.on('all', function(msg) {
+            allMes = msg;
+        })
+        socket.on('path', function(msg) {
+            cb.clearRect(0, 0, bb.width, bb.height);
+            for (var i = 0; i < msg.length; i++) {
+                var oneMsg = msg[i];
+                switch (oneMsg.type) {
+                    case '1':
+                        drawLine(oneMsg);
+                        break;
+                    case '2':
+                        drawRectangle(oneMsg);
+                        break;
+                    case '3':
+                        drawCircle(oneMsg);
+                        break;
+                    case '4':
+                        drawRectangle(oneMsg);
+                        break;
+                    case '5':
+                        drawCircle(oneMsg);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        })
+        socket.on('clear', function(msg) {
+            cb.clearRect(0, 0, bb.width, bb.height);
+        })
+
+        function drawLine(onePath) {
+            cb.strokeStyle = onePath.color;
+            cb.lineWidth = onePath.lineWidth;
+            cb.beginPath();
+            cb.moveTo(onePath.startX, onePath.startY)
+            cb.lineTo(onePath.endX, onePath.endY);
+            cb.stroke();
+        }
+
+        function drawRectangle(onePath) {
+            var startX = onePath.startX;
+            var startY = onePath.startY;
+            var endX = onePath.width;
+            var endY = onePath.height;
+            cb.strokeStyle = onePath.color;
+            cb.lineWidth = onePath.lineWidth;
+            cb.beginPath();
+            if (!onePath.fill) {
+                cb.strokeRect(startX, startY, endX, endY);
+            } else {
+                cb.fillStyle = onePath.color;
+                cb.fillRect(startX, startY, endX, endY);
+            }
+        }
+
+        function drawCircle(onePath) {
+            var startX = onePath.startX;
+            var startY = onePath.startY;
+            var radius = onePath.radius;
+            cb.strokeStyle = onePath.color;
+            cb.lineWidth = onePath.lineWidth;
+            cb.beginPath();
+            cb.arc(startX, startY, radius, 0, Math.PI * 2, true);
+            if (!onePath.fill) {
+                cb.stroke();
+            } else {
+                cb.fillStyle = onePath.color;
+                cb.fill();
+            }
+        }
+
+    </script>
+</body>
+
+</html>
