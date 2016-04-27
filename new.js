@@ -7,12 +7,6 @@ io.emit('some event', {
     for: 'everyone'
 });
 io.on('connection', function (socket) {
-    socket.on('start', function (msg) {
-        io.emit('start', msg);
-    });
-});
-
-io.on('connection', function (socket) {
     socket.on('path', function (msg) {
         io.emit('path', msg);
     });
