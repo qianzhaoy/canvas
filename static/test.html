@@ -5,11 +5,56 @@
     <meta charset="UTF-8">
     <title>学生端</title>
     <script type="text/javascript" src="socket.io.js"></script>
+    <style type="text/css">
+        .left {
+            float: left;
+        }
+        
+        .right {
+            margin-left: 20px;
+            float: left;
+            height: 600px;
+        }
+        
+        ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .userName {
+            font-size: 12px
+        }
+        .up{
+            position:absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            opacity: .5;
+        }
+    </style>
 </head>
 
 <body>
-    <canvas id="bb" height="600" width="800" style="border:1px solid #000"></canvas>
-
+    <div class="left">
+        <canvas id="bb" height="600" width="800" style="border:1px solid #000;float:left"></canvas>
+    </div>
+    <div class="right">
+        <div style="height:550px;width:400px">
+            <ul>
+                <li>
+                    <span class="userName">我的名字: </span>
+                    <span class="text"></span>
+                </li>
+            </ul>
+        </div>
+        <input type="text" style="height:40px;font-size:20px">
+    </div>
+    <div class="up">
+        
+    </div>
     <script type="text/javascript">
         var socket = io();
         var bb = document.getElementById('bb');
@@ -55,7 +100,7 @@
                 }
             }
         }
-        
+
         socket.on('clear', function(msg) {
             cb.clearRect(0, 0, bb.width, bb.height);
         })
@@ -104,6 +149,7 @@
                 cb.fill();
             }
         }
+
         function drawText(onePath) {
             var startX = onePath.startX;
             var startY = onePath.startY;
