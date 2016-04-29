@@ -23,11 +23,21 @@
         .right>ul>li {
             margin: 10px 0;
         }
+        
+        #textHidden {
+            height: 30px;
+            width: 150px;
+            font-size: 16px;
+            position: absolute;
+        }
+        
+        .textBg {
+            background-color: aqua
+        }
     </style>
 
     <script type="text/javascript">
         var socket = io();
-
     </script>
 </head>
 
@@ -41,23 +51,31 @@
                 <button id="clear">清除</button>
             </li>
             <li>
-                <label for="color">选择颜色: </label>
-            <li>
-                <label for="lineWidth">选择线条线宽: </label>
-                <input type="number" id="lineWidth" min="1" value="1">
+                <button id="back">后退</button>
             </li>
             <li>
-                <label for="lineWidth">选择线条线型: </label>
-                <select name="type" id="lineType">
-                    <!--                    <option value="0">任意线条</option>-->
-                    <option value="1">直线</option>
-                    <option value="2">矩形</option>
-                    <option value="3">圆形</option>
-                    <option value="4">实心矩形</option>
-                    <option value="5">实心圆形</option>
-                </select>
-            </li>  
+                <label for="color">选择颜色: </label>
+                <input type="color" id="color">
+                <li>
+                    <label for="lineWidth">选择线条线宽: </label>
+                    <input type="number" id="lineWidth" min="1" value="1">
+                </li>
+                <li>
+                    <label for="lineWidth">选择线条线型: </label>
+                    <select name="type" id="lineType">
+                        <!--                    <option value="0">任意线条</option>-->
+                        <option value="1">直线</option>
+                        <option value="2">矩形</option>
+                        <option value="3">圆形</option>
+                        <option value="4">实心矩形</option>
+                        <option value="5">实心圆形</option>
+                    </select>
+                </li>
+                <li>
+                    <input type="button" value="添加文字" id="textAdd">
+                </li>
         </ul>
+        <input type="text" id="textHidden" style="display:none">
     </div>
     <script type="text/javascript">
         var canvas = document.getElementById('can');
@@ -83,9 +101,13 @@
             //                ctx.stroke();
             //            };
 
-        function drawBefore() {
+        function drawBefore(back) {
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            for (var i = 0; i < pathArr.length - 1; i++) {
+            var pathLength = pathArr.length;
+            if (!!back) {
+                pathLength++;
+            }
+            for (var i = 0; i < pathLength - 1; i++) {
                 var onePath = pathArr[i];
                 switch (onePath.type) {
                     case '1':
@@ -102,6 +124,9 @@
                         break;
                     case '5':
                         drawCirBefore(onePath);
+                        break;
+                    case 'text':
+                        drawTextBefore(onePath);
                         break;
                     default:
                         break;
@@ -150,8 +175,17 @@
             }
         }
 
+        function drawTextBefore(onePath) {
+            var startX = onePath.startX;
+            var startY = onePath.startY;
+            var text = onePath.text;
+            ctx.font = "20px Arial";
+            ctx.fillStyle = onePath.color;
+            ctx.fillText(text, startX, startY);
+        }
+
         //画直线
-        var lineFn = function(eve) {
+        function lineFn(eve) {
             var a = eve.pageX - 8;
             var b = eve.pageY - 8;
             drawBefore();
@@ -166,7 +200,7 @@
         }
 
         //画矩形
-        var rectangleFn = function(eve) {
+        function rectangleFn(eve) {
             var a = eve.pageX - 8;
             var b = eve.pageY - 8;
             var startX = pathArr[pathArr.length - 1].startX;
@@ -183,7 +217,7 @@
         }
 
         //画圆形
-        var circleFn = function(eve) {
+        function circleFn(eve) {
             var x = eve.pageX - 8;
             var y = eve.pageY - 8;
             var startX = pathArr[pathArr.length - 1].startX;
@@ -202,7 +236,7 @@
         }
 
         //实心矩形
-        var fillRect = function(eve) {
+        function fillRect(eve) {
             var a = eve.pageX - 8;
             var b = eve.pageY - 8;
             var startX = pathArr[pathArr.length - 1].startX;
@@ -219,7 +253,7 @@
         }
 
         //实心圆形
-        var fillCircle = function(eve) {
+        function fillCircle(eve) {
             var x = eve.pageX - 8;
             var y = eve.pageY - 8;
             var startX = pathArr[pathArr.length - 1].startX;
@@ -236,7 +270,62 @@
             pathArr[pathArr.length - 1].radius = radius;
             pathArr[pathArr.length - 1].fill = true;
         }
-        var mouseFn = lineFn;
+
+        //写字
+        function fillText(eve) {
+            var text = document.getElementById('textHidden').value;
+            if (text != "") {
+                ctx.font = "20px Arial";
+                ctx.fillStyle = allMes.color;
+                ctx.fillText(text, $(this).position().left + 2, $(this).position().top + 8);
+                pathArr.push({
+                    type: allMes.type,
+                    text: text,
+                    startX: $(this).position().left + 2,
+                    startY: $(this).position().top + 8,
+                    color: allMes.color
+                })
+                socket.emit('path',pathArr);
+            }
+            document.getElementById('textHidden').value = "";
+        }
+
+        function mouseDownFn(event) {
+            var x = event.pageX - 8; // - 8 为了修正轨迹坐标
+            var y = event.pageY - 8;
+            var xy = {
+                startX: x,
+                startY: y,
+                color: allMes.color,
+                lineWidth: allMes.lineWidth,
+                type: allMes.type
+            };
+            pathArr.push(xy);
+
+            canvas.onmousemove = mouseFn;
+        }
+
+        function setText(eve) {
+            eve.stopPropagation();
+            document.getElementById('textHidden').blur();
+            var x = event.pageX - 5; // - 8 为了修正轨迹坐标
+            var y = event.pageY -15;
+            $("#textHidden").css({
+                left: x,
+                top: y,
+                display: ""
+            })
+            document.getElementById('textHidden').focus();
+            $(document).click(function(eve) {
+                $("#textHidden").hide();
+            })
+        }
+
+        $("#textHidden").click(function(eve) {
+            eve.stopPropagation();
+        })
+
+        document.getElementById('textHidden').onblur = fillText
 
         $("#color").change(function() {
             var mycolor = $('input').val();
@@ -250,9 +339,13 @@
             socket.emit('all', allMes);
         })
 
+
+        var mouseFn = lineFn;
         $("#lineType").change(function(eve) {
             var type = $(this).val();
             allMes.type = type;
+            canvas.onmousedown = mouseDownFn;
+            $('#textAdd').removeClass('textBg')
             switch (type) {
                 //                case '0':
                 //                    mouseFn = canvas;
@@ -275,30 +368,29 @@
             }
         })
 
-        $(canvas).mousedown(function(event) {
+        $("#textAdd").click(function(eve) {
+            eve.stopPropagation();
+            $(this).addClass('textBg');
+            canvas.onmousedown = setText;
+            allMes.type = "text";
+        })
 
-            var x = event.pageX - 8; // - 8 为了修正轨迹坐标
-            var y = event.pageY - 8;
-            var xy = {
-                startX: x,
-                startY: y,
-                color: allMes.color,
-                lineWidth: allMes.lineWidth,
-                type: allMes.type
-            };
-            pathArr.push(xy);
-
-            $(canvas).mousemove(mouseFn);
-        });
+        canvas.onmousedown = mouseDownFn;
         $(canvas).mouseup(function(eve) {
             socket.emit('path', pathArr);
-            $(this).unbind('mousemove');
+            this.onmousemove = "";
         })
 
         $("#clear").click(function() {
             pathArr = [];
             socket.emit('clear', true);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+        })
+
+        $("#back").click(function(eve) {
+            pathArr.pop();
+            drawBefore(true);
+            socket.emit('back', true);
         })
     </script>
 

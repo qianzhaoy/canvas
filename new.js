@@ -21,7 +21,12 @@ io.on('connection', function (socket) {
         io.emit('clear', msg);
     });
 });
+io.on('connection', function (socket) {
+    socket.on('back', function (msg) {
+        io.emit('back', msg);
+    });
+});
 app.use(express.static('static'));
-http.listen(8081, function () {
-    console.log('监听8081端口成功');
+http.listen(9001, function () {
+    console.log('监听9001端口成功');
 });

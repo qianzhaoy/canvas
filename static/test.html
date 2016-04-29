@@ -18,13 +18,19 @@
             color: "#000",
             lineWidth: 1
         }
+        var pathArr = [];
         socket.on('all', function(msg) {
             allMes = msg;
         })
         socket.on('path', function(msg) {
+            pathArr = msg;
+            drawAll();
+        })
+
+        function drawAll() {
             cb.clearRect(0, 0, bb.width, bb.height);
-            for (var i = 0; i < msg.length; i++) {
-                var oneMsg = msg[i];
+            for (var i = 0; i < pathArr.length; i++) {
+                var oneMsg = pathArr[i];
                 switch (oneMsg.type) {
                     case '1':
                         drawLine(oneMsg);
@@ -41,13 +47,21 @@
                     case '5':
                         drawCircle(oneMsg);
                         break;
+                    case 'text':
+                        drawText(oneMsg);
+                        break;
                     default:
                         break;
                 }
             }
-        })
+        }
+        
         socket.on('clear', function(msg) {
             cb.clearRect(0, 0, bb.width, bb.height);
+        })
+        socket.on('back', function(msg) {
+            pathArr.pop();
+            drawAll();
         })
 
         function drawLine(onePath) {
@@ -89,6 +103,14 @@
                 cb.fillStyle = onePath.color;
                 cb.fill();
             }
+        }
+        function drawText(onePath) {
+            var startX = onePath.startX;
+            var startY = onePath.startY;
+            var text = onePath.text;
+            cb.font = "20px Arial";
+            cb.fillStyle = onePath.color;
+            cb.fillText(text, startX, startY);
         }
     </script>
 </body>
