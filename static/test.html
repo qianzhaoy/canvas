@@ -34,6 +34,26 @@
             background-color: #000;
             opacity: .5;
         }
+        .yourName{
+            position: absolute;
+            top: 40%;
+            left: 40%
+        }
+        .yourName input[type="text"]{
+            height: 40px;
+            width: 200px;
+            font-size: 18px;
+        }
+         .yourName input[type="button"]{
+            height: 40px;
+            width: 205px;
+            font-size: 18px;
+             margin-top: 20px;
+        }
+        .oneMessage{
+            margin-bottom: 20px;
+            word-break: break-all
+        }
     </style>
 </head>
 
@@ -42,18 +62,16 @@
         <canvas id="bb" height="600" width="800" style="border:1px solid #000;float:left"></canvas>
     </div>
     <div class="right">
-        <div style="height:550px;width:400px">
-            <ul>
-                <li>
-                    <span class="userName">我的名字: </span>
-                    <span class="text"></span>
-                </li>
-            </ul>
+        <div style="height:550px;width:400px" id="allMessage">
         </div>
-        <input type="text" style="height:40px;font-size:20px">
+        <input type="text" style="height:40px;font-size:20px" id="sendText">
+        <input type="button" id="send" value="发送" style="height:40px;font-size:20px">
     </div>
-    <div class="up">
-        
+    <div class="up" id="up">
+        <div class="yourName">
+            <input type="text" placeholder="你的名字" id="writeName"><br>
+            <input type="button" value="确定" id="myName">
+        </div>
     </div>
     <script type="text/javascript">
         var socket = io();
@@ -64,6 +82,7 @@
             lineWidth: 1
         }
         var pathArr = [];
+        var myName = "";
         socket.on('all', function(msg) {
             allMes = msg;
         })
@@ -71,7 +90,26 @@
             pathArr = msg;
             drawAll();
         })
-
+        
+         socket.on('messages', function(msg) {
+            var span = document.createElement('div');
+            span.className = "oneMessage"
+            span.innerHTML = msg.user + ":" + msg.text;
+            document.getElementById('allMessage').appendChild(span);
+        })
+         
+        document.getElementById('myName').addEventListener('click',function (eve) {
+            myName = document.getElementById('writeName').value || '游客';
+            document.getElementById('up').style.display = "none";
+        },false);
+        
+        document.getElementById('send').addEventListener('click',function (eve) {
+            var obj = {};
+            obj.text = document.getElementById('sendText').value;
+            obj.user = myName;
+            socket.emit('messages',obj);
+        },false);
+        
         function drawAll() {
             cb.clearRect(0, 0, bb.width, bb.height);
             for (var i = 0; i < pathArr.length; i++) {

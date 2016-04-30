@@ -34,6 +34,13 @@
         .textBg {
             background-color: aqua
         }
+        #getMessage{
+            padding-left: 40px;
+            margin-top: 20px;
+        }
+        .oneMessage{
+            margin-top: 15px;
+        }
     </style>
 
     <script type="text/javascript">
@@ -75,6 +82,8 @@
                     <input type="button" value="添加文字" id="textAdd">
                 </li>
         </ul>
+        <div id="getMessage">
+        </div>
         <input type="text" id="textHidden" style="display:none">
     </div>
     <script type="text/javascript">
@@ -391,6 +400,13 @@
             pathArr.pop();
             drawBefore(true);
             socket.emit('back', true);
+        })
+        
+        socket.on('messages', function(msg) {
+            var div = document.createElement('div');
+            div.className = "oneMessage"
+            div.innerHTML = msg.user + ": " + msg.text
+            document.getElementById('getMessage').appendChild(div);
         })
     </script>
 

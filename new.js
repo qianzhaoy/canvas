@@ -26,6 +26,11 @@ io.on('connection', function (socket) {
         io.emit('back', msg);
     });
 });
+io.on('connection', function (socket) {
+    socket.on('messages', function (msg) {
+        io.emit('messages', msg);
+    });
+});
 app.use(express.static('static'));
 http.listen(9001, function () {
     console.log('监听9001端口成功');
