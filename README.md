@@ -9,3 +9,6 @@ npm install
 
 ### 启动
 node new.js 
+
+打开浏览器 localhost:9001/static/canvas.html
+          localhost:9001/static/test.html
